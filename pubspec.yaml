@@ -1,12 +1,15 @@
 name: p50_direct_fresh
-description: P50S direct print test.
+description: P50S BLE direct print test.
 publish_to: 'none'
-version: 1.0.0+4
+version: 1.0.0+5
 environment:
   sdk: '>=3.4.0 <4.0.0'
 dependencies:
   flutter:
     sdk: flutter
+  flutter_blue_plus: 1.36.8
+  print_master_ble: ^0.2.0
+  image: ^4.6.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
