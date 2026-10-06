@@ -1,4 +1,4 @@
-name: P50 DIRECT TEST APK
+name: P50 DIRECT TEST APK FINAL
 on:
   workflow_dispatch:
   push:
