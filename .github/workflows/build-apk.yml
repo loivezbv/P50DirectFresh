@@ -14,6 +14,10 @@ jobs:
           cache: true
       - name: Generate current Android scaffold
         run: flutter create --platforms=android --org com.ddoolive --project-name p50_direct_fresh .
+      - name: Install P50 native Android bridge
+        run: |
+          cp android/app/src/main/kotlin/com/ddoolive/p50direct/MainActivity.kt android/app/src/main/kotlin/com/ddoolive/p50_direct_fresh/MainActivity.kt
+          sed -i 's/package com.ddoolive.p50direct/package com.ddoolive.p50_direct_fresh/' android/app/src/main/kotlin/com/ddoolive/p50_direct_fresh/MainActivity.kt
       - name: Remove generated sample test
         run: rm -f test/widget_test.dart
       - run: flutter pub get
