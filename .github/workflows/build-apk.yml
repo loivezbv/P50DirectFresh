@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - rebuild-from-classic
+      - final-print-build
   pull_request:
     branches:
       - main
