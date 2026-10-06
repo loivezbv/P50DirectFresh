@@ -14,7 +14,7 @@ class P50App extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MaterialApp(
     debugShowCheckedModeBanner: false,
-    title: 'P50 BLE TEST',
+    title: 'P50S VERIFIED TEST',
     theme: ThemeData(useMaterial3: true),
     home: const P50Home(),
   );
