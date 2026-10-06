@@ -1,8 +1,9 @@
-name: P50 DIRECT TEST APK # final-ble
+name: P50 DIRECT TEST APK
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches:
+      - main
 jobs:
   build:
     runs-on: ubuntu-latest
