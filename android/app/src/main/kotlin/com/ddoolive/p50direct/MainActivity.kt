@@ -10,6 +10,7 @@ import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import java.util.UUID
+import java.util.zip.Deflater
 
 class MainActivity : FlutterActivity() {
     private val channel = "ddoolive/p50_bt"
@@ -47,10 +48,38 @@ class MainActivity : FlutterActivity() {
                     }
                     "printTest" -> {
                         val s = socket ?: throw Exception("먼저 P50 연결 필요")
-                        val esc = byteArrayOf(0x1B, 0x40)
-                        val text = "P50 DIRECT TEST\nBluetooth SPP OK\n\n\n".toByteArray(Charsets.US_ASCII)
-                        s.outputStream.write(esc + text)
-                        s.outputStream.flush()
+                        val widthBytes = 48
+                        val height = 160
+                        val raw = ByteArray(widthBytes * height)
+                        for (y in 0 until height) {
+                            for (x in 0 until widthBytes) {
+                                val border = y < 8 || y >= height - 8 || x == 0 || x == widthBytes - 1
+                                val bars = y in 40 until 120 && ((x / 2) % 2 == 0)
+                                raw[y * widthBytes + x] = if (border || bars) 0xFF.toByte() else 0x00
+                            }
+                        }
+                        val deflater = Deflater()
+                        deflater.setInput(raw)
+                        deflater.finish()
+                        val tmp = ByteArray(raw.size + 256)
+                        val n = deflater.deflate(tmp)
+                        deflater.end()
+                        val data = tmp.copyOf(n)
+                        fun send(bytes: ByteArray) { s.outputStream.write(bytes); s.outputStream.flush(); Thread.sleep(80) }
+                        send(byteArrayOf(0x1F,0x70,0x02,0x03))
+                        send(byteArrayOf(0x1F,0xC0.toByte(),0x01,0x00))
+                        send(byteArrayOf(0x1F,0x11,0x51))
+                        val header = byteArrayOf(
+                            0x1F,0x10,
+                            ((widthBytes shr 8) and 0xFF).toByte(),(widthBytes and 0xFF).toByte(),
+                            ((height shr 8) and 0xFF).toByte(),(height and 0xFF).toByte(),
+                            ((n shr 24) and 0xFF).toByte(),((n shr 16) and 0xFF).toByte(),
+                            ((n shr 8) and 0xFF).toByte(),(n and 0xFF).toByte()
+                        )
+                        send(header + data)
+                        send(byteArrayOf(0x1F,0x12,0x20,0x00))
+                        send(byteArrayOf(0x1F,0xC0.toByte(),0x01,0x01))
+                        send(byteArrayOf(0x1F,0x11,0x50))
                         result.success(true)
                     }
                     else -> result.notImplemented()
