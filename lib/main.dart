@@ -60,7 +60,7 @@ class _P50HomeState extends State<P50Home> {
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         Text(status), const SizedBox(height: 16),
         DropdownButtonFormField<String>(
-          value: selected,
+          initialValue: selected,
           decoration: const InputDecoration(border: OutlineInputBorder(), labelText: '페어링된 프린터'),
           items: devices.map((d) => DropdownMenuItem(value: d['address'], child: Text("${d['name']}  ${d['address']}"))).toList(),
           onChanged: (v) => setState(() => selected = v),
