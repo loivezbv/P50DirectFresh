@@ -177,7 +177,7 @@ class _P50HomeState extends State<P50Home> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('P50 BLE DIRECT TEST')),
+    appBar: AppBar(title: const Text('P50S VERIFIED DIRECT TEST')),
     body: Padding(
       padding: const EdgeInsets.all(16),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
