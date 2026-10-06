@@ -1,7 +1,7 @@
 name: p50_direct_fresh
 description: P50S BLE direct print test.
 publish_to: 'none'
-version: 1.0.0+2
+version: 1.0.0+3
 environment:
   sdk: '>=3.4.0 <4.0.0'
 dependencies:
