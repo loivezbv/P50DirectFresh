@@ -19,7 +19,7 @@ class _P50HomeState extends State<P50Home> {
   static const channel = MethodChannel('ddoolive/p50_bt');
   List<Map<String, String>> devices = [];
   String? selected;
-  String status = 'P50S 검색 준비';
+  String status = 'P50S 검색 준비 ';
 
   Future<void> refresh() async {
     try {
