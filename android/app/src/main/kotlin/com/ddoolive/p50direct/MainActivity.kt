@@ -21,7 +21,7 @@ class MainActivity : FlutterActivity() {
         MethodChannel(engine.dartExecutor.binaryMessenger, channel).setMethodCallHandler { call, result ->
             if (Build.VERSION.SDK_INT >= 31 &&
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(arrayOf(Manifest.permission.BLUETOOTH_CONNECT), 100)
+                requestPermissions(arrayOf(Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN), 100)
                 result.error("PERMISSION", "블루투스 권한을 허용한 뒤 다시 눌러줘", null)
                 return@setMethodCallHandler
             }
@@ -39,7 +39,9 @@ class MainActivity : FlutterActivity() {
                         val address = call.argument<String>("address") ?: throw Exception("주소 없음")
                         socket?.close()
                         socket = adapter.getRemoteDevice(address).createRfcommSocketToServiceRecord(spp)
-                        adapter.cancelDiscovery()
+                        if (Build.VERSION.SDK_INT < 31 || ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED) {
+                            adapter.cancelDiscovery()
+                        }
                         socket!!.connect()
                         result.success(true)
                     }
