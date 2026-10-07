@@ -84,8 +84,6 @@ class _P50HomeState extends State<P50Home> {
   final priceCtrl = TextEditingController(text: '10000');
   final nameCtrl = TextEditingController(text: '아이보리니트');
   StreamSubscription<List<ScanResult>>? scanSub;
-  final priceCtrl = TextEditingController(text: '10000');
-  final nameCtrl = TextEditingController(text: '아이보리니트');
   final labelKey = GlobalKey();
 
   Future<void> scan() async {
