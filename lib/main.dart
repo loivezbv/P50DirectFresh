@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:image/image.dart' as img;
@@ -80,6 +81,9 @@ class _P50HomeState extends State<P50Home> {
   FbpPrinterDevice? printer;
   PrintMasterHandler? handler;
   StreamSubscription<List<ScanResult>>? scanSub;
+  final priceCtrl = TextEditingController(text: '10000');
+  final nameCtrl = TextEditingController(text: '아이보리니트');
+  final labelKey = GlobalKey();
 
   Future<void> scan() async {
     setState(() => status = 'BLE P50S 검색 중...');
@@ -133,17 +137,12 @@ class _P50HomeState extends State<P50Home> {
     }
   }
 
-  img.Image makeTestImage() {
-    final im = img.Image(width: 384, height: 240);
-    img.fill(im, color: img.ColorRgb8(255, 255, 255));
-    for (var y = 20; y < 220; y++) {
-      for (var x = 20; x < 364; x++) {
-        final border = x < 28 || x >= 356 || y < 28 || y >= 212;
-        final bars = y >= 70 && y < 170 && ((x ~/ 16) % 2 == 0);
-        if (border || bars) im.setPixelRgba(x, y, 0, 0, 0, 255);
-      }
-    }
-    return im;
+  Future<img.Image> makeLabelImage() async {
+    await WidgetsBinding.instance.endOfFrame;
+    final boundary = labelKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+    final ui.Image shot = await boundary.toImage(pixelRatio: 1.0);
+    final data = await shot.toByteData(format: ui.ImageByteFormat.png);
+    return img.decodePng(data!.buffer.asUint8List())!;
   }
 
   Future<void> printTest() async {
@@ -152,10 +151,13 @@ class _P50HomeState extends State<P50Home> {
       setState(() => status = '먼저 P50S BLE 연결');
       return;
     }
+    FocusScope.of(context).unfocus();
     try {
-      setState(() => status = 'P50 전용 0x1F 출력 전송 중...');
-      await h.printImage(makeTestImage(), printerWidth: 384, alignment: PrintAlignment.center);
-      setState(() => status = 'P50 전용 출력 명령 완료');
+      setState(() => status = '라벨 출력 중...');
+      await Future.delayed(const Duration(milliseconds: 100));
+      final label = await makeLabelImage();
+      await h.printImage(label, printerWidth: 384, alignment: PrintAlignment.center);
+      setState(() => status = '라벨 출력 완료');
     } catch (e) {
       setState(() => status = '출력 실패: $e');
     }
@@ -170,6 +172,8 @@ class _P50HomeState extends State<P50Home> {
   @override
   void dispose() {
     scanSub?.cancel();
+    priceCtrl.dispose();
+    nameCtrl.dispose();
     handler?.dispose();
     printer?.disconnect();
     super.dispose();
@@ -177,7 +181,7 @@ class _P50HomeState extends State<P50Home> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('P50S VERIFIED DIRECT TEST')),
+    appBar: AppBar(title: const Text('P50S 라벨 출력')),
     body: Padding(
       padding: const EdgeInsets.all(16),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
@@ -195,8 +199,26 @@ class _P50HomeState extends State<P50Home> {
         const SizedBox(height: 12),
         FilledButton(onPressed: scan, child: const Text('BLE P50 새로고침')),
         FilledButton(onPressed: selected == null ? null : connect, child: const Text('P50 BLE 연결')),
+        const SizedBox(height: 12),
+        TextField(controller: priceCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(border: OutlineInputBorder(), labelText: '금액'), onChanged: (_) => setState(() {})),
         const SizedBox(height: 8),
-        FilledButton.tonal(onPressed: printTest, child: const Text('P50S VERIFIED TEST 출력')),
+        TextField(controller: nameCtrl, decoration: const InputDecoration(border: OutlineInputBorder(), labelText: '상품명'), onChanged: (_) => setState(() {})),
+        const SizedBox(height: 12),
+        Center(child: RepaintBoundary(
+          key: labelKey,
+          child: Container(
+            width: 384, height: 240, color: Colors.white,
+            alignment: Alignment.center,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Text(priceCtrl.text, style: const TextStyle(color: Colors.black, fontSize: 72, fontWeight: FontWeight.w900, height: 1)),
+              const SizedBox(height: 18),
+              Text(nameCtrl.text, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.black, fontSize: 42, fontWeight: FontWeight.w700, height: 1)),
+            ]),
+          ),
+        )),
+        const SizedBox(height: 12),
+        FilledButton.tonal(onPressed: printTest, child: const Text('라벨 출력')),
       ]),
     ),
   );
